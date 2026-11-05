@@ -261,12 +261,13 @@ function empresaDe(r){ return {...DEFAULTS, ...(r.empresa || cfg())}; }
 function reciboHTML(r){
   const e = empresaDe(r), linhas = r.linhas || [];
   const horas = linhas.reduce((t,l)=>t+(l.tipo==="retro"?Number(l.horas)||0:0),0);
+  const viagens = linhas.reduce((t,l)=>t+(l.tipo==="caminhao"?Number(l.viagens)||0:0),0);
   return `<div class="paper-wrap"><div class="paper">
     <div class="hd"><b>${esc(e.empresa)}</b>CNPJ: ${esc(e.cnpj)}<br><br>Data: ${dataBR(r.data)}<br>Cliente: ${esc(r.clienteNome)}<br>Endereço: ${esc(r.endereco||"-")}</div>
     <table><thead><tr><th>Descrição</th><th>Data</th><th>Viagens</th><th>Valor</th><th>Início</th><th>Término</th><th>Total Horas</th><th>Total</th></tr></thead>
     <tbody>${linhas.map(l=>`<tr><td>${TIPOS[l.tipo].desc}</td><td>${dataBR(l.data)}</td><td>${l.tipo==="caminhao"?Number(l.viagens):"-"}</td><td>${brl(l.valor)}</td>
       <td>${l.tipo==="retro"&&l.inicio?esc(l.inicio):"-"}</td><td>${l.tipo==="retro"&&l.fim?esc(l.fim):"-"}</td><td>${l.tipo==="retro"?num(l.horas):"-"}</td><td>${brl(l.total)}</td></tr>`).join("")}</tbody>
-    <tfoot><tr><td>TOTAL</td><td>-</td><td></td><td>-</td><td>-</td><td>-</td><td>${num(horas)}</td><td>${brl(r.total)}</td></tr></tfoot></table>
+    <tfoot><tr><td>TOTAL</td><td>-</td><td>${viagens}</td><td>-</td><td>-</td><td>-</td><td>${num(horas)}</td><td>${brl(r.total)}</td></tr></tfoot></table>
     <div class="fim">Serviços Finalizados.<br><br><b>Valor total a receber: ${brl(r.total)}</b></div>
     <div class="sig">${esc(e.assinatura)}<br>${esc(e.cpf)}<br>${esc(e.cidade)}</div>
   </div></div>`;
@@ -477,6 +478,7 @@ function montarPDF(r){
   doc.text("Cliente: "+r.clienteNome, cx, 48, {align:"center"});
   doc.text("Endereço: "+(r.endereco||"-"), cx, 54, {align:"center"});
   const horas = linhas.reduce((t,l)=>t+(l.tipo==="retro"?Number(l.horas)||0:0),0);
+  const viagens = linhas.reduce((t,l)=>t+(l.tipo==="caminhao"?Number(l.viagens)||0:0),0);
   doc.autoTable({
     startY:68, theme:"grid", margin:{left:12,right:12},
     styles:{font:"helvetica", fontSize:8.5, halign:"center", valign:"middle", lineColor:[60,60,60], lineWidth:.2, textColor:[17,17,17], cellPadding:1.8},
@@ -485,7 +487,7 @@ function montarPDF(r){
     head:[["Descrição","Data","Viagens","Valor Hora","Início","Término","Total Horas","Total"]],
     body:linhas.map(l=>[TIPOS[l.tipo].desc, dataBR(l.data), l.tipo==="caminhao"?String(Number(l.viagens)):"-", money(l.valor),
       l.tipo==="retro"&&l.inicio?l.inicio:"-", l.tipo==="retro"&&l.fim?l.fim:"-", l.tipo==="retro"?num(l.horas):"-", money(l.total)]),
-    foot:[["TOTAL","-","","-","-","-",num(horas),money(r.total)]],
+    foot:[["TOTAL","-",String(viagens),"-","-","-",num(horas),money(r.total)]],
     showFoot:"lastPage"
   });
   let y = doc.lastAutoTable.finalY + 16;
