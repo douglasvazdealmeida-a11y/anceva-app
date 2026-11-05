@@ -1,5 +1,5 @@
 // Keeps the app working without internet. Data sync goes straight to the Google Sheet (not cached).
-const CACHE = "anceva-v1";
+const CACHE = "anceva-v2";
 const ARQUIVOS = ["./", "index.html", "app.js", "manifest.webmanifest", "icon-192.png", "icon-512.png",
   "jspdf.umd.min.js", "jspdf.plugin.autotable.min.js"];
 
